@@ -2,14 +2,22 @@
   "name": "recipe-manager",
   "version": "1.0.0",
   "description": "Recipe Manager Full Stack Application",
+  "main": "RM_backend/app.js",
   "scripts": {
     "build": "cd RM_with_Vue && npm install && npm run build",
-    "start": "cd RM_backend && npm install && npm start",
-    "dev": "npm run start"
+    "start": "cd RM_backend && npm install && node app.js",
+    "dev": "cd RM_backend && npm install && node app.js"
   },
   "engines": {
     "node": "18.x"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^16.0.0",
+    "express": "~4.16.1",
+    "mongodb": "^6.0.0",
+    "morgan": "~1.9.1"
+  }
 }
