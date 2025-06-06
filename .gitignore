@@ -1,0 +1,11 @@
+# Environment variables
+.env
+RM_backend/.env
+
+# Node modules
+node_modules/
+RM_backend/node_modules/
+RM_with_Vue/node_modules/
+
+# Build files
+RM_with_Vue/dist/
