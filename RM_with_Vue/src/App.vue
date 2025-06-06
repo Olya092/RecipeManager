@@ -1,10 +1,19 @@
 <script setup>
 import { RouterLink, RouterView, useRouter } from 'vue-router' 
 import { nextTick } from 'vue';
+import { useAuthStore } from '@/stores/auth'  // ADD THIS IMPORT
 
 const router = useRouter(); 
+const authStore = useAuthStore()  // ADD THIS LINE
 
 async function navigateAndScrollToAddRecipe() {
+  // Check if user can access admin before navigating
+  if (!authStore.canAccessAdmin) {
+    // If not authenticated, go to home page instead
+    await router.push('/');
+    return;
+  }
+
   if (router.currentRoute.value.name !== 'admin') {
     try {
       await router.push({ name: 'admin' });
@@ -55,15 +64,34 @@ async function navigateAndScrollToAddRecipe() {
     
     <nav class="bg-gray-800 sticky top-0 z-50 py-3 text-center">
       <RouterLink to="/" class="text-white mx-2 sm:mx-4 px-3 py-2 rounded hover:bg-orange-600 transition-colors">Home</RouterLink>
-      <RouterLink to="/admin" class="text-white mx-2 sm:mx-4 px-3 py-2 rounded hover:bg-orange-600 transition-colors">Admin</RouterLink>
+      
+      <!-- Only show Admin and Add New Recipe if user can access admin -->
+      <RouterLink 
+        v-if="authStore.canAccessAdmin" 
+        to="/admin" 
+        class="text-white mx-2 sm:mx-4 px-3 py-2 rounded hover:bg-orange-600 transition-colors"
+      >
+        Admin
+      </RouterLink>
       
       <button 
+        v-if="authStore.canAccessAdmin"
         @click="navigateAndScrollToAddRecipe"
         class="text-white mx-2 sm:mx-4 px-3 py-2 rounded bg-orange-500 hover:bg-orange-600 transition-colors font-semibold"
         aria-label="Add new recipe"
       >
-        Add New Recipe
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
       </button>
+
+      <!-- Show authentication status in nav -->
+      <span v-if="authStore.isPreviewMode" class="text-yellow-300 mx-2 sm:mx-4 px-3 py-2 text-sm">
+        Preview Mode
+      </span>
+      <span v-else-if="authStore.isLoggedIn" class="text-green-300 mx-2 sm:mx-4 px-3 py-2 text-sm">
+        Welcome, {{ authStore.user.name }}
+      </span>
     </nav>
 
     <div class="flex-grow"> 

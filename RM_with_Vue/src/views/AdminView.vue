@@ -1,5 +1,6 @@
 <template>
     <div> <!-- Wrapper -->
+
       <!-- View Recipe Modal Component -->
       <RecipeViewModal 
         :show="showRecipeModal" 
@@ -128,6 +129,7 @@
   
 <script setup>
   import { ref, computed, onMounted } from "vue"; 
+   import { useAuthStore } from '@/stores/auth'
   import RecipeViewModal from '../components/RecipeViewModal.vue';
   import RecipeEditModal from '../components/RecipeEditModal.vue';
   import ConfirmDeleteModal from '../components/ConfirmDeleteModal.vue';
@@ -135,6 +137,8 @@
   import RecipeListItem from '../components/RecipeListItem.vue';
   import RecipeForm from '../components/RecipeForm.vue';
   import axios from 'axios';
+
+  const authStore = useAuthStore()
   
   const initialNewRecipeState = () => ({
     image: '', name: '', category: '', description: '',
@@ -148,8 +152,6 @@
   const isLoading = ref(false);
   const apiError = ref(null);
 
-  //let debounceTimer = null;
-
   // --- API Calls ---
 
   const fetchRecipes = async () => {
@@ -160,9 +162,6 @@
       if (searchQuery.value) {
         params.search = searchQuery.value;
       }
-      // if (selectedCategory.value && selectedCategory.value !== 'All') { // If add category filter
-      //   params.category = selectedCategory.value;
-      // }
       const response = await axios.get('/api/recipes', { params });
       recipes.value = response.data.recipes; // Assuming backend returns { recipes: [...] }
       console.log('Received recipes:', recipes.value); // Add this line to debug
@@ -176,11 +175,6 @@
     }
   };
 
-  // const fetchRecipesDebounced = () => {
-  //   clearTimeout(debounceTimer);
-  //   debounceTimer = setTimeout(fetchRecipes, 500); // 500ms delay
-  // };
-
   const triggerSearch = () => {
     fetchRecipes();
   };
@@ -189,31 +183,9 @@
     fetchRecipes();
   });
 
-  // const filteredRecipes = computed(() => {
-  //   if (!searchQuery.value) {
-  //     return recipes.value; // Return all recipes if search query is empty
-  //   }
-  //   const lowerSearchQuery = searchQuery.value.toLowerCase();
-  //   return recipes.value.filter(recipe => {
-  //     return (
-  //       (recipe.name && recipe.name.toLowerCase().includes(lowerSearchQuery)) ||
-  //       (recipe.category && recipe.category.toLowerCase().includes(lowerSearchQuery)) ||
-  //       (recipe.description && recipe.description.toLowerCase().includes(lowerSearchQuery)) ||
-  //       (recipe.temperature && recipe.temperature.toLowerCase().includes(lowerSearchQuery)) ||
-  //       (recipe.prepTime !== null && String(recipe.prepTime).includes(lowerSearchQuery)) ||
-  //       (recipe.cookTime !== null && String(recipe.cookTime).includes(lowerSearchQuery))   
-  //     );
-  //   });
-  // });
-
   const filteredRecipes = computed(() => {
     return recipes.value;
   });
-
-  // Helper to find the original index in the `recipes` array for a recipe from `filteredRecipes`
-  // function findOriginalIndex(filteredRecipe) {
-  //   return recipes.value.findIndex(r => r.id === filteredRecipe.id);
-  // }
 
   // Toast Notification
   function showToast(message, type = 'success') {
@@ -252,28 +224,22 @@
   // Edit Modal State & Logic
   const showEditModal = ref(false);
   const editingRecipeData = ref(null); 
-  //let editingRecipeOriginalIndex = -1; // Removed originalIndex, will find by ID
   
   function openEditModalWithRecipe(recipe) {
     editingRecipeData.value = { ...recipe }; 
-    //editingRecipeOriginalIndex = originalIndex; 
     showEditModal.value = true;
     if (showRecipeModal.value) closeRecipeViewModal(); 
   }
   
   function editRecipeFromView() {
     if (viewingRecipe.value) {
-      //const originalIndex = findOriginalIndex(viewingRecipe.value);
-      //if (originalIndex !== -1) {
-        openEditModalWithRecipe(viewingRecipe.value);
-      //}
+      openEditModalWithRecipe(viewingRecipe.value);
     }
   }
-  
+
   function closeEditModal() {
     showEditModal.value = false;
     editingRecipeData.value = null;
-    //editingRecipeOriginalIndex = -1;
   }
   
    async function saveEditedRecipe(updatedRecipeFromModal) {
@@ -307,11 +273,9 @@
   // Delete Modal State & Logic 
   const showDeleteModal = ref(false);
   const recipeToDelete = ref(null); 
-  //let recipeToDeleteOriginalIndex = -1;
   
   function openDeleteModalWithRecipe(recipe) {
     recipeToDelete.value = recipe;
-    //recipeToDeleteOriginalIndex = originalIndex; 
     showDeleteModal.value = true;
     if (showRecipeModal.value) closeRecipeViewModal(); 
   }
@@ -325,7 +289,6 @@
   function closeDeleteModal() {
     showDeleteModal.value = false;
     recipeToDelete.value = null;
-    //recipeToDeleteOriginalIndex = -1;
   }
 
   async function confirmDeleteRecipe() {
