@@ -1,0 +1,15 @@
+{
+  "name": "recipe-manager",
+  "version": "1.0.0",
+  "description": "Recipe Manager Full Stack Application",
+  "scripts": {
+    "build": "cd RM_with_Vue && npm install && npm run build",
+    "start": "cd RM_backend && npm install && npm start",
+    "dev": "npm run start"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
