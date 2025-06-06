@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -14,7 +16,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true })); 
 app.use(cookieParser());
 
-const db_connection_string = "mongodb+srv://oegorova1604:tpcZ9COATRZfSI3C@rmcluster.o2iaspf.mongodb.net/?retryWrites=true&w=majority&appName=RMcluster";
+const db_connection_string = process.env.MONGODB_CONNECTION_STRING;
 const client = new MongoClient(db_connection_string, {
     serverApi: { 
         version: ServerApiVersion.v1,
