@@ -9,7 +9,11 @@ import App from './App.vue'
 import router from './router'
 
 //axios.defaults.baseURL = 'http://localhost:3000'
-axios.defaults.baseURL == "https://recipe-manager-37ph.onrender.com" // for deployment
+//axios.defaults.baseURL == "https://recipe-manager-37ph.onrender.com" // for deployment
+//axios.defaults.baseURL = process.env.BASE_URL
+axios.defaults.baseURL = process.env.NODE_ENV === 'production' 
+  ? 'https://recipe-manager-37ph.onrender.com' 
+  : 'http://localhost:3000'
 
 const app = createApp(App)
 
