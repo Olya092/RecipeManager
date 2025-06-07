@@ -180,14 +180,6 @@ async function navigateAndScrollToAddRecipe() {
             </svg>
             Account
           </RouterLink>
-          
-          <button 
-            v-if="authStore.isLoggedIn"
-            @click="authStore.logout; isMobileMenuOpen = false"
-            class="text-white px-3 py-2 rounded bg-red-600 hover:bg-red-700 transition-colors text-center"
-          >
-            Logout
-          </button>
         </div>
       </div>
     </div>
