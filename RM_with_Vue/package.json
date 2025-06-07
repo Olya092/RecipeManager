@@ -11,8 +11,10 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@netlify/functions": "^4.1.4",
     "@tailwindcss/vite": "^4.1.5",
     "axios": "^1.9.0",
+    "mongodb": "^6.17.0",
     "pinia": "^3.0.1",
     "tailwindcss": "^4.1.5",
     "vue": "^3.5.13",
