@@ -16,7 +16,20 @@ const router = createRouter({
       component: () => import('../views/AdminView.vue'),
       beforeEnter: (to, from, next) => {
         const authStore = useAuthStore()
-        if (authStore.canAccessAdmin) {
+        if (authStore.isLoggedIn) {
+          next()
+        } else {
+          next('/')
+        }
+      }
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: () => import('../views/AccountView.vue'),
+      beforeEnter: (to, from, next) => {
+        const authStore = useAuthStore()
+        if (authStore.isLoggedIn) {
           next()
         } else {
           next('/')

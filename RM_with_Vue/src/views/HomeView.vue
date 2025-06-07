@@ -1,17 +1,3 @@
-<!-- <script setup></script>
-
-<template>
-  <main>
-    Log in to start managing your recipes!
-
-    ToDO:
-    On a Home Page log in button should be visible if not logged in. Perform login and redirect to the Admin Page.
-    
-    ToDo: Admin Page should be visible only when signed in as an admin/as a user - then it is a user account page. 
-
-  </main>
-</template> -->
-
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -22,6 +8,7 @@ const authStore = useAuthStore()
 
 const showLoginForm = ref(false)
 const showSignupForm = ref(false)
+const isLoading = ref(false)
 
 const loginForm = ref({
   email: '',
@@ -37,43 +24,72 @@ const signupForm = ref({
 const loginError = ref('')
 const signupError = ref('')
 
-const handleLogin = () => {
+const handleLogin = async () => {
+  if (isLoading.value) return
+  
   loginError.value = ''
-  const result = authStore.login(loginForm.value)
+  isLoading.value = true
   
-  if (result.success) {
-    router.push('/admin')
-  } else {
-    loginError.value = result.error
+  try {
+    const result = await authStore.login(loginForm.value)
+    
+    if (result.success) {
+      router.push('/admin')
+    } else {
+      loginError.value = result.error
+    }
+  } catch (error) {
+    loginError.value = 'An unexpected error occurred'
+  } finally {
+    isLoading.value = false
   }
 }
 
-const handleSignup = () => {
+const handleSignup = async () => {
+  if (isLoading.value) return
+  
   signupError.value = ''
-  const result = authStore.signup(signupForm.value)
   
-  if (result.success) {
-    router.push('/admin')
-  } else {
-    signupError.value = result.error
+  // Client-side validation
+  if (!signupForm.value.name || !signupForm.value.email || !signupForm.value.password) {
+    signupError.value = 'Please fill in all fields'
+    return
   }
-}
-
-const previewWithoutSignin = () => {
-  authStore.enablePreviewMode()
-  router.push('/admin')
+  
+  if (signupForm.value.password.length < 6) {
+    signupError.value = 'Password must be at least 6 characters long'
+    return
+  }
+  
+  isLoading.value = true
+  
+  try {
+    const result = await authStore.signup(signupForm.value)
+    
+    if (result.success) {
+      router.push('/admin')
+    } else {
+      signupError.value = result.error
+    }
+  } catch (error) {
+    signupError.value = 'An unexpected error occurred'
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const showLogin = () => {
   showLoginForm.value = true
   showSignupForm.value = false
   loginError.value = ''
+  loginForm.value = { email: '', password: '' }
 }
 
 const showSignup = () => {
   showSignupForm.value = true
   showLoginForm.value = false
   signupError.value = ''
+  signupForm.value = { name: '', email: '', password: '' }
 }
 
 const hideAllForms = () => {
@@ -87,9 +103,13 @@ const hideAllForms = () => {
 <template>
   <main class="home-container">
     <div v-if="!authStore.isLoggedIn" class="welcome-section">
-      <h1>Welcome!!</h1>
-      <p>Log in to start managing your recipes!</p>
-      
+      <h1>Welcome to Recipe Manager! 🍳</h1>
+      <p>Create an account or log in to start managing your recipes!</p>
+      <p>To try full mode of the app log in with the following credetentials:
+        <br>Email: <strong>guest@example.com</strong>
+        <br>Password: <strong>guest01</strong>
+      </p>
+
       <!-- Action Buttons -->
       <div v-if="!showLoginForm && !showSignupForm" class="action-buttons">
         <button @click="showLogin" class="btn btn-primary">
@@ -97,9 +117,6 @@ const hideAllForms = () => {
         </button>
         <button @click="showSignup" class="btn btn-secondary">
           Sign Up
-        </button>
-        <button @click="previewWithoutSignin" class="btn btn-preview">
-          Preview Without Signing In
         </button>
       </div>
       
@@ -114,6 +131,7 @@ const hideAllForms = () => {
               id="login-email" 
               v-model="loginForm.email" 
               required
+              :disabled="isLoading"
               placeholder="Enter your email"
             />
           </div>
@@ -125,6 +143,7 @@ const hideAllForms = () => {
               id="login-password" 
               v-model="loginForm.password" 
               required
+              :disabled="isLoading"
               placeholder="Enter your password"
             />
           </div>
@@ -134,8 +153,20 @@ const hideAllForms = () => {
           </div>
           
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Log In</button>
-            <button type="button" @click="hideAllForms" class="btn btn-secondary">
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              :disabled="isLoading"
+            >
+              <span v-if="isLoading">Logging in...</span>
+              <span v-else>Log In</span>
+            </button>
+            <button 
+              type="button" 
+              @click="hideAllForms" 
+              class="btn btn-secondary"
+              :disabled="isLoading"
+            >
               Cancel
             </button>
           </div>
@@ -144,7 +175,7 @@ const hideAllForms = () => {
       
       <!-- Signup Form -->
       <div v-if="showSignupForm" class="auth-form">
-        <h2>Create Account</h2>
+        <h2>Create Your Account</h2>
         <form @submit.prevent="handleSignup">
           <div class="form-group">
             <label for="signup-name">Full Name:</label>
@@ -153,6 +184,7 @@ const hideAllForms = () => {
               id="signup-name" 
               v-model="signupForm.name" 
               required
+              :disabled="isLoading"
               placeholder="Enter your full name"
             />
           </div>
@@ -164,6 +196,7 @@ const hideAllForms = () => {
               id="signup-email" 
               v-model="signupForm.email" 
               required
+              :disabled="isLoading"
               placeholder="Enter your email"
             />
           </div>
@@ -175,7 +208,9 @@ const hideAllForms = () => {
               id="signup-password" 
               v-model="signupForm.password" 
               required
-              placeholder="Create a password"
+              :disabled="isLoading"
+              placeholder="Create a password (min 6 characters)"
+              minlength="6"
             />
           </div>
           
@@ -184,8 +219,20 @@ const hideAllForms = () => {
           </div>
           
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Sign Up</button>
-            <button type="button" @click="hideAllForms" class="btn btn-secondary">
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              :disabled="isLoading"
+            >
+              <span v-if="isLoading">Creating account...</span>
+              <span v-else>Sign Up</span>
+            </button>
+            <button 
+              type="button" 
+              @click="hideAllForms" 
+              class="btn btn-secondary"
+              :disabled="isLoading"
+            >
               Cancel
             </button>
           </div>
@@ -196,7 +243,7 @@ const hideAllForms = () => {
     <!-- Already logged in -->
     <div v-else class="logged-in-section">
       <h1>Welcome back, {{ authStore.user.name }}! 👋</h1>
-      <p>You're successfully logged in.</p>
+      <p>You're successfully logged in to Recipe Manager.</p>
       
       <div class="action-buttons">
         <router-link to="/admin" class="btn btn-primary">
@@ -260,12 +307,17 @@ p {
   display: inline-block;
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-primary {
   background-color: #ea580c;
   color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #dc2626;
 }
 
@@ -274,17 +326,8 @@ p {
   color: white;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background-color: #4b5563;
-}
-
-.btn-preview {
-  background-color: #f59e0b;
-  color: white;
-}
-
-.btn-preview:hover {
-  background-color: #d97706;
 }
 
 .auth-form {
@@ -328,6 +371,11 @@ p {
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
 }
 
+.form-group input:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+}
+
 .error-message {
   color: #dc2626;
   margin-bottom: 1rem;
@@ -354,4 +402,3 @@ p {
   }
 }
 </style>
-

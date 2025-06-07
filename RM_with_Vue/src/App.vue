@@ -1,14 +1,16 @@
 <script setup>
 import { RouterLink, RouterView, useRouter } from 'vue-router' 
-import { nextTick } from 'vue';
-import { useAuthStore } from '@/stores/auth'  // ADD THIS IMPORT
+import { nextTick, ref } from 'vue';
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter(); 
-const authStore = useAuthStore()  // ADD THIS LINE
+const authStore = useAuthStore()
+
+const isMobileMenuOpen = ref(false)
 
 async function navigateAndScrollToAddRecipe() {
-  // Check if user can access admin before navigating
-  if (!authStore.canAccessAdmin) {
+  // Check if user is logged in before navigating
+  if (!authStore.isLoggedIn) {
     // If not authenticated, go to home page instead
     await router.push('/');
     return;
@@ -62,36 +64,133 @@ async function navigateAndScrollToAddRecipe() {
       </details>
     </header>
     
-    <nav class="bg-gray-800 sticky top-0 z-50 py-3 text-center">
-      <RouterLink to="/" class="text-white mx-2 sm:mx-4 px-3 py-2 rounded hover:bg-orange-600 transition-colors">Home</RouterLink>
-      
-      <!-- Only show Admin and Add New Recipe if user can access admin -->
-      <RouterLink 
-        v-if="authStore.canAccessAdmin" 
-        to="/admin" 
-        class="text-white mx-2 sm:mx-4 px-3 py-2 rounded hover:bg-orange-600 transition-colors"
-      >
-        Admin
-      </RouterLink>
-      
-      <button 
-        v-if="authStore.canAccessAdmin"
-        @click="navigateAndScrollToAddRecipe"
-        class="text-white mx-2 sm:mx-4 px-3 py-2 rounded bg-orange-500 hover:bg-orange-600 transition-colors font-semibold"
-        aria-label="Add new recipe"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-        </svg>
-      </button>
+    <nav class="bg-gray-800 sticky top-0 z-50 py-3">
+    <div class="max-w-6xl mx-auto px-4">
+    
+      <!-- Mobile - Always show burger menu button when screen is small -->
+      <div class="md:hidden flex justify-center">
+        <button 
+          @click="isMobileMenuOpen = !isMobileMenuOpen"
+          class="text-white p-2 rounded hover:bg-orange-600 transition-colors"
+          aria-label="Toggle menu"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
 
-      <!-- Show authentication status in nav -->
-      <span v-if="authStore.isPreviewMode" class="text-yellow-300 mx-2 sm:mx-4 px-3 py-2 text-sm">
-        Preview Mode
-      </span>
-      <span v-else-if="authStore.isLoggedIn" class="text-green-300 mx-2 sm:mx-4 px-3 py-2 text-sm">
-        Welcome, {{ authStore.user.name }}
-      </span>
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center justify-between">
+        <!-- When NOT logged in - Center the Home button -->
+        <div v-if="!authStore.isLoggedIn" class="w-full flex justify-center">
+          <RouterLink to="/" class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors">
+            Home
+          </RouterLink>
+        </div>
+
+        <!-- When logged in - Show full navigation -->
+        <template v-else>
+          <!-- Left side navigation -->
+          <div class="flex items-center space-x-2 sm:space-x-4">
+            <RouterLink to="/" class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors">
+              Home
+            </RouterLink>
+            
+            <!-- Only show Admin and Add New Recipe if user is logged in -->
+            <RouterLink 
+              v-if="authStore.isLoggedIn" 
+              to="/admin" 
+              class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors"
+            >
+              Admin
+            </RouterLink>
+            
+            <button 
+              v-if="authStore.isLoggedIn"
+              @click="navigateAndScrollToAddRecipe"
+              class="text-white px-3 py-2 rounded bg-orange-500 hover:bg-orange-600 transition-colors font-semibold flex items-center"
+              aria-label="Add new recipe"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              <span class="hidden sm:inline">Add Recipe</span>
+            </button>
+          </div>
+
+          <!-- Right side navigation -->
+          <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- Account button for logged in users -->
+            <RouterLink 
+              v-if="authStore.isLoggedIn" 
+              to="/account" 
+              class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+              </svg>
+              <span class="hidden sm:inline">Account</span>
+            </RouterLink>
+          </div>
+        </template>
+      </div>
+
+      <!-- Mobile Menu (dropdown) -->
+      <div v-if="isMobileMenuOpen" class="md:hidden mt-3 bg-gray-700 rounded-lg p-4">
+        <div class="flex flex-col space-y-2">
+          <RouterLink 
+            to="/" 
+            @click="isMobileMenuOpen = false"
+            class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors text-center"
+          >
+            Home
+          </RouterLink>
+          
+          <!-- Show admin links if user is logged in -->
+          <RouterLink 
+            v-if="authStore.isLoggedIn" 
+            to="/admin" 
+            @click="isMobileMenuOpen = false"
+            class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors text-center"
+          >
+            Admin
+          </RouterLink>
+          
+          <button 
+            v-if="authStore.isLoggedIn"
+            @click="navigateAndScrollToAddRecipe; isMobileMenuOpen = false"
+            class="text-white px-3 py-2 rounded bg-orange-500 hover:bg-orange-600 transition-colors font-semibold flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Add Recipe
+          </button>
+          
+          <!-- Account button for logged in users -->
+          <RouterLink 
+            v-if="authStore.isLoggedIn" 
+            to="/account" 
+            @click="isMobileMenuOpen = false"
+            class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+            </svg>
+            Account
+          </RouterLink>
+          
+          <button 
+            v-if="authStore.isLoggedIn"
+            @click="authStore.logout; isMobileMenuOpen = false"
+            class="text-white px-3 py-2 rounded bg-red-600 hover:bg-red-700 transition-colors text-center"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
     </nav>
 
     <div class="flex-grow"> 
