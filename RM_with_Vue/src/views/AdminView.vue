@@ -52,6 +52,24 @@
             </div>
         </div>
 
+        <!-- Add New Recipe Section - MOVED TO TOP -->
+        <section v-if="!isLoading && !apiError" class="bg-white rounded-lg shadow-md p-5 mb-5">
+          <h3 class="text-2xl text-orange-600 text-center mb-4">
+            Here the magic ✨ will happen and a new recipe 🍳 will be born!
+          </h3>
+          <details id="add-recipe-details" class="bg-gray-50 rounded-lg p-4">
+            <summary class="text-orange-600 font-bold bg-white p-2 rounded shadow-sm cursor-pointer">Add a New Recipe</summary>
+            <div class="mt-4">
+              <RecipeForm
+                v-model="newRecipe"
+                submit-button-text="Create Recipe"
+                form-id-prefix="new-recipe"
+                @submit="addNewRecipe"
+              />
+            </div>
+          </details> 
+        </section>
+
         <!-- Loading and error states -->
         <div v-if="isLoading" class="text-center py-8">Loading recipes...</div>
         <div v-if="apiError" class="text-center py-8 text-red-500">{{ apiError }}</div>
@@ -71,13 +89,13 @@
               <p>No recipes match your search.</p>
             </div>
             <div v-if="!recipes.length && !searchQuery" class="text-gray-500 text-center py-4">
-              <p>You haven't created any recipes yet. Add your first recipe below!</p>
+              <p>You haven't created any recipes yet. Add your first recipe above!</p>
             </div>
           </div>
         </div>
         
         <!-- Table view for larger screens -->
-        <section v-if="!isLoading && !apiError" class="hidden sm:block bg-white rounded-lg shadow-md p-5 mb-5">
+        <section v-if="!isLoading && !apiError" class="hidden sm:block bg-white rounded-lg shadow-md p-5">
           <article>
             <div v-if="filteredRecipes.length" class="overflow-x-auto">
               <table class="w-full table-auto border-collapse table-fixed">
@@ -110,27 +128,9 @@
               <p>No recipes match your search.</p>
             </div>
             <div v-if="!recipes.length && !searchQuery" class="text-gray-500 text-center py-8">
-              <p>You haven't created any recipes yet. Add your first recipe below!</p>
+              <p>You haven't created any recipes yet. Add your first recipe above!</p>
             </div>
           </article>
-        </section>
-        
-        <!-- Add New Recipe Section -->
-        <section v-if="!isLoading && !apiError" class="bg-white rounded-lg shadow-md p-5">
-          <h3 class="text-2xl text-orange-600 text-center mb-4">
-            Here the magic ✨ will happen and a new recipe 🍳 will be born!
-          </h3>
-          <details id="add-recipe-details" class="bg-gray-50 rounded-lg p-4">
-            <summary class="text-orange-600 font-bold bg-white p-2 rounded shadow-sm cursor-pointer">Add a New Recipe</summary>
-            <div class="mt-4">
-              <RecipeForm
-                v-model="newRecipe"
-                submit-button-text="Create Recipe"
-                form-id-prefix="new-recipe"
-                @submit="addNewRecipe"
-              />
-            </div>
-          </details> 
         </section>
       </main>
     </div>
