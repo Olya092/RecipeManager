@@ -31,28 +31,17 @@
             <div class="text-center sm:text-left mb-4 sm:mb-0">
               <h2 class="text-3xl text-orange-600">My Recipes</h2>
             </div>
-            <div class="w-full sm:w-auto flex items-center space-x-2">
-                <input 
-                    type="text" 
-                    v-model="searchQuery" 
-                    @keyup.enter="triggerSearch"
-                    @input="fetchRecipesDebounced" 
-                    placeholder="Search your recipes..."
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
-                />
-                <button 
-                    @click="triggerSearch" 
-                    class="p-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
-                    aria-label="Search"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-            </div>
+            
+            <!-- Enhanced Search Component -->
+            <EnhancedSearch
+              v-model:searchQuery="searchQuery"
+              v-model:selectedCategory="selectedCategory"
+              @search="triggerSearch"
+              @clear="clearAndFetchAll"
+            />
         </div>
 
-        <!-- Add New Recipe Section - MOVED TO TOP -->
+        <!-- Add New Recipe Section -->
         <section v-if="!isLoading && !apiError" class="bg-white rounded-lg shadow-md p-5 mb-5">
           <h3 class="text-2xl text-orange-600 text-center mb-4">
             Here the magic ✨ will happen and a new recipe 🍳 will be born!
@@ -70,6 +59,27 @@
           </details> 
         </section>
 
+        <!-- Results Summary -->
+        <div v-if="!isLoading && !apiError && (searchQuery || selectedCategory)" class="mb-4">
+          <p class="text-gray-600 text-sm">
+            <span v-if="filteredRecipes.length > 0">
+              Found {{ filteredRecipes.length }} recipe{{ filteredRecipes.length !== 1 ? 's' : '' }}
+            </span>
+            <span v-else>
+              No recipes found
+            </span>
+            <span v-if="searchQuery && selectedCategory">
+              for "{{ searchQuery }}" in {{ selectedCategory }}
+            </span>
+            <span v-else-if="searchQuery">
+              for "{{ searchQuery }}"
+            </span>
+            <span v-else-if="selectedCategory">
+              in {{ selectedCategory }}
+            </span>
+          </p>
+        </div>
+
         <!-- Loading and error states -->
         <div v-if="isLoading" class="text-center py-8">Loading recipes...</div>
         <div v-if="apiError" class="text-center py-8 text-red-500">{{ apiError }}</div>
@@ -85,10 +95,13 @@
               @edit="openEditModalWithRecipe(recipe)"
               @delete="openDeleteModalWithRecipe(recipe)"
             />
-            <div v-if="!filteredRecipes.length && searchQuery" class="text-gray-500 text-center py-4">
-              <p>No recipes match your search.</p>
+            <div v-if="!filteredRecipes.length && (searchQuery || selectedCategory)" class="text-gray-500 text-center py-4">
+              <p>No recipes match your search criteria.</p>
+              <button @click="clearAllFilters" class="text-orange-600 hover:underline mt-2">
+                Clear all filters
+              </button>
             </div>
-            <div v-if="!recipes.length && !searchQuery" class="text-gray-500 text-center py-4">
+            <div v-if="!recipes.length && !searchQuery && !selectedCategory" class="text-gray-500 text-center py-4">
               <p>You haven't created any recipes yet. Add your first recipe above!</p>
             </div>
           </div>
@@ -124,10 +137,13 @@
                 </tbody>
               </table>
             </div>
-            <div v-if="!filteredRecipes.length && searchQuery" class="text-gray-500 text-center py-8">
-              <p>No recipes match your search.</p>
+            <div v-if="!filteredRecipes.length && (searchQuery || selectedCategory)" class="text-gray-500 text-center py-8">
+              <p>No recipes match your search criteria.</p>
+              <button @click="clearAllFilters" class="text-orange-600 hover:underline mt-2">
+                Clear all filters
+              </button>
             </div>
-            <div v-if="!recipes.length && !searchQuery" class="text-gray-500 text-center py-8">
+            <div v-if="!recipes.length && !searchQuery && !selectedCategory" class="text-gray-500 text-center py-8">
               <p>You haven't created any recipes yet. Add your first recipe above!</p>
             </div>
           </article>
@@ -146,6 +162,7 @@
   import RecipeCard from '../components/RecipeCard.vue';
   import RecipeListItem from '../components/RecipeListItem.vue';
   import RecipeForm from '../components/RecipeForm.vue';
+  import EnhancedSearch from '../components/EnhancedSearch.vue'; // New component
   import axios from 'axios';
 
   const authStore = useAuthStore()
@@ -161,6 +178,7 @@
   const newRecipe = ref(initialNewRecipeState());
   
   const searchQuery = ref('');
+  const selectedCategory = ref('');
   const isLoading = ref(false);
   const apiError = ref(null);
 
@@ -173,6 +191,9 @@
       const params = {};
       if (searchQuery.value) {
         params.search = searchQuery.value;
+      }
+      if (selectedCategory.value && selectedCategory.value !== 'All') {
+        params.category = selectedCategory.value;
       }
       const response = await axios.get('/api/recipes', { params });
       recipes.value = response.data.recipes;
@@ -189,6 +210,46 @@
 
   const triggerSearch = () => {
     fetchRecipes();
+  };
+
+  const clearAndFetchAll = () => {
+    // Immediately fetch all recipes without any filters
+    searchQuery.value = '';
+    selectedCategory.value = '';
+    fetchAllRecipes();
+  };
+
+  const fetchAllRecipes = async () => {
+    isLoading.value = true;
+    apiError.value = null;
+    try {
+      // Fetch without any parameters to get all recipes
+      const response = await axios.get('/api/recipes');
+      recipes.value = response.data.recipes;
+      console.log('Received all recipes:', recipes.value);
+    } catch (err) {
+      console.error("Failed to fetch recipes:", err);
+      apiError.value = "Failed to load recipes. Please try again later.";
+      recipes.value = [];
+      showToast(apiError.value, "error");
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const clearAllFilters = () => {
+    searchQuery.value = '';
+    selectedCategory.value = '';
+    fetchAllRecipes(); // Immediately fetch all recipes
+  };
+
+  // Debounced search function (optional)
+  let searchTimeout;
+  const fetchRecipesDebounced = () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      fetchRecipes();
+    }, 300); // 300ms delay
   };
 
   onMounted(() => {
