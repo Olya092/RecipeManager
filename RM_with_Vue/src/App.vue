@@ -81,7 +81,7 @@ async function navigateAndScrollToAddRecipe() {
               to="/admin" 
               class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors"
             >
-              Admin
+              Recipes
             </RouterLink>
             
             <button 
@@ -132,7 +132,7 @@ async function navigateAndScrollToAddRecipe() {
             @click="isMobileMenuOpen = false"
             class="text-white px-3 py-2 rounded hover:bg-orange-600 transition-colors text-center"
           >
-            Admin
+            Recipes
           </RouterLink>
           
           <button 
