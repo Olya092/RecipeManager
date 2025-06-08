@@ -16,30 +16,8 @@ async function navigateAndScrollToAddRecipe() {
     return;
   }
 
-  if (router.currentRoute.value.name !== 'admin') {
-    try {
-      await router.push({ name: 'admin' });
-    } catch (error) {
-      if (error.name === 'NavigationDuplicated') {
-        console.warn("NavigationDuplicated error, proceeding with scroll attempt.");
-      } else {
-        console.error("Navigation error:", error);
-        return; 
-      }
-    }
-  }
-  
-  nextTick(() => {
-    const targetElement = document.getElementById('add-recipe-details');
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-      if (!targetElement.open) {
-        targetElement.open = true;
-      }
-    } else {
-      console.warn("Element with ID 'add-recipe-details' not found on the current page after navigation attempt.");
-    }
-  });
+  // Navigate to admin page with a query parameter
+  await router.push({ name: 'admin', query: { openAddRecipe: 'true' } });
 }
 </script>
 
@@ -159,7 +137,7 @@ async function navigateAndScrollToAddRecipe() {
           
           <button 
             v-if="authStore.isLoggedIn"
-            @click="navigateAndScrollToAddRecipe; isMobileMenuOpen = false"
+            @click="() => { navigateAndScrollToAddRecipe(); isMobileMenuOpen = false; }"
             class="text-white px-3 py-2 rounded bg-orange-500 hover:bg-orange-600 transition-colors font-semibold flex items-center justify-center"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">

@@ -137,8 +137,9 @@
 </template>
   
 <script setup>
-  import { ref, computed, onMounted } from "vue"; 
+  import { ref, computed, onMounted, watch, nextTick } from "vue"; 
   import { useAuthStore } from '@/stores/auth'
+  import { useRoute, useRouter } from 'vue-router'
   import RecipeViewModal from '../components/RecipeViewModal.vue';
   import RecipeEditModal from '../components/RecipeEditModal.vue';
   import ConfirmDeleteModal from '../components/ConfirmDeleteModal.vue';
@@ -148,6 +149,8 @@
   import axios from 'axios';
 
   const authStore = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
   
   const initialNewRecipeState = () => ({
     image: '', name: '', category: '', description: '',
@@ -190,6 +193,40 @@
 
   onMounted(() => {
     fetchRecipes();
+    
+    // Check if we should open the add recipe form
+    if (route.query.openAddRecipe === 'true') {
+      // Add a small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        const detailsElement = document.getElementById('add-recipe-details');
+        if (detailsElement) {
+          detailsElement.open = true;
+          // Scroll to the element with offset to center it better
+          detailsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          
+          // Clear the query parameter after using it
+          router.replace({ query: {} });
+        }
+      }, 300); // 300ms delay to ensure DOM is ready
+    }
+  });
+
+  // Watch for route changes to handle navigation from other pages
+  watch(() => route.query.openAddRecipe, (newValue) => {
+    if (newValue === 'true') {
+      // Add a small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        const detailsElement = document.getElementById('add-recipe-details');
+        if (detailsElement) {
+          detailsElement.open = true;
+          // Scroll to the element with offset to center it better
+          detailsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          
+          // Clear the query parameter after using it
+          router.replace({ query: {} });
+        }
+      }, 300); // 300ms delay to ensure DOM is ready
+    }
   });
 
   const filteredRecipes = computed(() => {
