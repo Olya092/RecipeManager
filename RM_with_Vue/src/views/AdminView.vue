@@ -59,27 +59,6 @@
           </details> 
         </section>
 
-        <!-- Results Summary -->
-        <div v-if="!isLoading && !apiError && (searchQuery || selectedCategory)" class="mb-4">
-          <p class="text-gray-600 text-sm">
-            <span v-if="filteredRecipes.length > 0">
-              Found {{ filteredRecipes.length }} recipe{{ filteredRecipes.length !== 1 ? 's' : '' }}
-            </span>
-            <span v-else>
-              No recipes found
-            </span>
-            <span v-if="searchQuery && selectedCategory">
-              for "{{ searchQuery }}" in {{ selectedCategory }}
-            </span>
-            <span v-else-if="searchQuery">
-              for "{{ searchQuery }}"
-            </span>
-            <span v-else-if="selectedCategory">
-              in {{ selectedCategory }}
-            </span>
-          </p>
-        </div>
-
         <!-- Loading and error states -->
         <div v-if="isLoading" class="text-center py-8">Loading recipes...</div>
         <div v-if="apiError" class="text-center py-8 text-red-500">{{ apiError }}</div>
