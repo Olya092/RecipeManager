@@ -24,15 +24,15 @@
         </div>
         <div class="flex justify-between">
           <span class="font-bold">Preparation Time:</span>
-          <span>{{ recipe.prepTime || 'N/A' }} mins</span>
+          <span>{{ recipe.prepTime || '-' }} mins</span>
         </div>
         <div class="flex justify-between">
           <span class="font-bold">Cooking Time:</span>
-          <span>{{ recipe.cookTime || 'N/A' }} mins</span>
+          <span>{{ recipe.cookTime || '-' }} mins</span>
         </div>
         <div class="flex justify-between">
           <span class="font-bold">Temperature:</span>
-          <span>{{ recipe.temperature || 'N/A' }}</span>
+          <span>{{ recipe.temperature || '-' }}</span>
         </div>
         <div class="pt-2">
           <a :href="recipe.link" target="_blank" class="text-orange-600 hover:underline">View Original Recipe</a>
