@@ -4,8 +4,6 @@ A full-stack web application that helps you organize and manage your favorite re
 
 🌐 **[Live Demo](https://recipe-managerrr.onrender.com)** - Try the app now!
 
-![Recipe Manager](https://cdn-icons-png.flaticon.com/512/2909/2909765.png)
-
 ## 🌟 Features
 
 ### User Management
