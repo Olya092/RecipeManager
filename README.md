@@ -140,7 +140,6 @@ This project is open source and available under the [MIT License](LICENSE).
 ## 🙏 Acknowledgments
 
 - Icons from [Flaticon](https://www.flaticon.com/)
-- Placeholder images from [Bento Themes](https://theme-assets.getbento.com/)
 - Built with love for food enthusiasts everywhere!🍳 And especially for my mum and in her favourite colours❤️
 
 ## 📞 Contact
