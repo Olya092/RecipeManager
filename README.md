@@ -106,7 +106,6 @@ A full-stack web application that helps you organize and manage your favorite re
    ```env
    MONGODB_CONNECTION_STRING=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret_key
-   PORT=3000
    ```
 
 5. **Start the application**
