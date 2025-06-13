@@ -39,10 +39,11 @@ A full-stack web application that helps you organize and manage your favorite re
 ### Backend
 - **Node.js** - JavaScript runtime environment
 - **Express.js** - Web application framework
-- **MongoDB** - NoSQL database for data storage
+- **Database** - MongoDB: NoSQL database for data storage
 - **JWT (jsonwebtoken)** - Authentication and authorization
 - **bcrypt** - Password hashing for security
 - **CORS** - Cross-origin resource sharing middleware
+- **API** - HTTP handlers and request/response handling
 
 ## 🔧 API Endpoints
 
@@ -64,14 +65,6 @@ A full-stack web application that helps you organize and manage your favorite re
 - `GET /api/recipes/:id` - Get recipe by ID
 - `PUT /api/recipes/:id` - Update recipe
 - `DELETE /api/recipes/:id` - Delete recipe
-
-## 🔒 Security Features
-
-- **Password Hashing** - Bcrypt encryption for secure password storage
-- **JWT Authentication** - Stateless token-based authentication
-- **Protected Routes** - Middleware protection for sensitive endpoints
-- **User Data Isolation** - Users can only access their own recipes
-- **Input Validation** - Server-side validation for all user inputs
 
 ## 🚀 Getting Started
 
@@ -124,6 +117,21 @@ A full-stack web application that helps you organize and manage your favorite re
    - Local Frontend: `http://localhost:5173`
    - Local Backend API: `http://localhost:3000`
    - **Live Application**: [https://recipe-managerrr.onrender.com](https://recipe-managerrr.onrender.com)
+
+## Future Improvements
+
+  - [ ] Add recipe sharing and communication between users
+  - [ ] Add possibility to form groups among users, allowing access to each other's recipes within the group
+  - [ ] Integrate external Recipe APIs and add option to import recipes directly to personal account
+  - [ ] Add recipe collections/folders organization
+
+Optional:
+
+  - [ ] Add social features (follow other users)
+  - [ ] Add recipe rating and review system
+  - [ ] Add recipe recommendations based on preferences
+  - [ ] Add nutrition information integration
+  - [ ] Add cooking timer functionality
 
 ## 🤝 Contributing
 
