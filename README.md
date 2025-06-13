@@ -151,8 +151,3 @@ This project is open source and available under the [MIT License](LICENSE).
 - Icons from [Flaticon](https://www.flaticon.com/)
 - Built with love for food enthusiasts everywhere!🍳 And especially for my mum and in her favourite colours❤️
 
-## 📞 Contact
-
-- **GitHub:** [@Olya092](https://github.com/Olya092)
-- **Repository:** [RecipeManager](https://github.com/Olya092/RecipeManager)
-- **Live Application:** [https://recipe-managerrr.onrender.com](https://recipe-managerrr.onrender.com)
