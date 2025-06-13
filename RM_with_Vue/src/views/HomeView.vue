@@ -106,11 +106,16 @@ const hideAllForms = () => {
       <h1>Welcome to Recipe Manager! 🍳</h1>
       <p>Create an account or log in to start managing your recipes!</p>
       <p>Your email can be fake for now, but <strong>don't forget your credetentials</strong> if you want to return to your saved recipe list 😉</p>
+      <!--
       <p>To try full mode of the app log in with the following credetentials:
         <br>Email: <strong>guest@example.com</strong>
         <br>Password: <strong>guest01</strong>
       </p>
-      
+      -->
+      <p>To try mode of the app with existing recipes log in with the following credetentials:
+        <br>Email: <strong>guest2@example.com</strong>
+        <br>Password: <strong>guest02</strong>
+      </p>
 
       <!-- Action Buttons -->
       <div v-if="!showLoginForm && !showSignupForm" class="action-buttons">
