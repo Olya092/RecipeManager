@@ -56,6 +56,7 @@ A full-stack web application that helps you organize and manage your favorite re
 ### Users
 - `GET /api/users` - Get all users (admin)
 - `GET /api/users/:id` - Get user by ID
+-  `POST /api/users` - Create new user
 - `PUT /api/users/:id` - Update user profile
 - `DELETE /api/users/:id` - Delete user account
 
