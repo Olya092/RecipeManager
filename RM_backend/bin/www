@@ -4,7 +4,8 @@
  * Module dependencies.
  */
 
-var app = require('../app');
+//var app = require('../app');
+var server = require('../app');
 var debug = require('debug')('rm-backend:server');
 var http = require('http');
 
@@ -13,13 +14,13 @@ var http = require('http');
  */
 
 var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+//app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+//var server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -87,4 +88,5 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+  console.log('Server listening on ' + bind);
 }

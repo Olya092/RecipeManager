@@ -8,6 +8,8 @@ var cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+const { Server } = require("socket.io");
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 var app = express();
@@ -18,8 +20,45 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true })); 
 app.use(cookieParser());
 
+// --- SOCKET.IO SERVER SETUP ---
+const io = new Server(3002, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
+});
+
+io.on('connection', handleNamespaceConnect);
+
+function handleNamespaceConnect(socket) {
+  console.log(`A user connected with ID: ${socket.id}`);
+  
+  // Get the interested operations from query string
+  const interestedIn = socket.handshake.query.interestedIn || "";
+  const interests = interestedIn.split(',').filter(interest => interest.trim());
+  
+  // Join the client to rooms for each interest
+  if (interests.length > 0) {
+    socket.join(interests);
+    console.log(`Client ${socket.id} joined rooms: [${interests.join(', ')}]`);
+  }
+  
+  socket.on('disconnect', () => {
+    console.log(`User ${socket.id} disconnected.`);
+  });
+}
+
+// Broadcast function - exactly like in app_class.js
+function wsioBroadcast(eventInfo, broadcasterClientId) {
+  // eventInfo: { collection, op, payload }
+  console.log(eventInfo);
+  const interest = `${eventInfo.collection}:${eventInfo.op}`;
+  console.log(interest);
+  io.to(interest).except(broadcasterClientId).emit(interest, eventInfo.payload);
+}
+
 const db_connection_string = process.env.MONGODB_CONNECTION_STRING;
-const JWT_SECRET = process.env.JWT_SECRET || 'your-default-secret-key-change-this';
+const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = 10;
 
 const client = new MongoClient(db_connection_string, {
@@ -390,10 +429,13 @@ async function updateRecipe(id, updatedData) {
         
         if (updatedRecipeDocument) {
             // Transform _id to id for frontend compatibility
-            const { _id, ...rest } = updatedRecipeDocument;
+            // const { _id, ...rest } = updatedRecipeDocument;
+            const { _id: mongoId, ...rest } = updatedRecipeDocument;
             return {
                 ...rest,
-                id: _id.toString()
+                // id: _id.toString()
+                _id: mongoId.toString(),
+                id: mongoId.toString()
             };
         }
         
@@ -509,7 +551,7 @@ app.post("/api/auth/logout", (req, res) => {
 
 // --- USER ENDPOINTS ---
 
-// GET /api/users - Get all users (ADMIN only)
+// GET /api/users - Get all users (ADMIN only - logged in user basically)
 app.get("/api/users", authenticateToken, async (req, res) => {
     try {
         const allUsers = await getAllUsers();
@@ -562,7 +604,7 @@ app.put("/api/users/:id", authenticateToken, async (req, res) => {
     const userId = req.params.id;
     const updatedData = req.body;
 
-    // Users can only update their own profile (unless admin)
+    // Users can only update their own profile
     if (req.user.id !== userId) {
         return res.status(403).json({ error: "You can only update your own profile." });
     }
@@ -586,7 +628,7 @@ app.put("/api/users/:id", authenticateToken, async (req, res) => {
 app.delete("/api/users/:id", authenticateToken, async (req, res) => {
     const userId = req.params.id;
     
-    // Users can only delete their own account (unless admin)
+    // Users can only delete their own account
     if (req.user.id !== userId) {
         return res.status(403).json({ error: "You can only delete your own account." });
     }
@@ -606,7 +648,7 @@ app.delete("/api/users/:id", authenticateToken, async (req, res) => {
     }
 });
 
-// --- RECIPE ENDPOINTS ---
+// --- RECIPE ENDPOINTS (with socket.io integration)---
 
 // GET /api/recipes - Get all recipes with optional search
 app.get("/api/recipes", async (req, res) => {
@@ -634,8 +676,9 @@ app.get("/api/recipes", async (req, res) => {
     }
 });
 
-// POST /api/recipes - Create a new recipe (PROTECTED)
+// POST /api/recipes - Create a new recipe (PROTECTED) - "io" changed
 app.post("/api/recipes", authenticateToken, async (req, res) => {
+    const clientId = req.header("x-client-id");
     const recipeData = req.body;
 
     if (!recipeData.name) {
@@ -650,10 +693,18 @@ app.post("/api/recipes", authenticateToken, async (req, res) => {
             createdBy: req.user.email
         };
         
-        const newRecipe = await createNewRecipe(recipeWithUser);
-        res.status(201).json(newRecipe);
+        const createdRecipe = await createNewRecipe(recipeWithUser);
+
+        console.log("Broadcasting create event with clientId:", clientId);
+        wsioBroadcast({
+            collection: "recipe",
+            op: "create",
+            payload: createdRecipe
+        }, clientId);
+
+        res.status(201).json(createdRecipe);
     } catch (error) {
-        res.status(500).json({ error: "Failed to create recipe." });
+        res.status(500).json({ error: "Failed to create recipe.", details: error.message });
     }
 });
 
@@ -672,42 +723,59 @@ app.get("/api/recipes/:id", async (req, res) => {
     }
 });
 
-// PUT /api/recipes/:id - Update an existing recipe (PROTECTED)
+// PUT /api/recipes/:id - Update an existing recipe (PROTECTED) - "io" changed
 app.put("/api/recipes/:id", authenticateToken, async (req, res) => {
+    const clientId = req.header("x-client-id");
     const recipeId = req.params.id;
     const updatedData = req.body;
 
-    if (!updatedData) {
-        return res.status(400).json({ error: "Missing recipe data in request body." });
+    if (!updatedData.name) {
+        return res.status(400).json({ error: "Missing required recipe fields (name)." });
     }
 
     try {
         const updatedRecipe = await updateRecipe(recipeId, updatedData);
+
+        console.log("Broadcasting update event with clientId:", clientId);
+        wsioBroadcast({
+            collection: "recipe",
+            op: "update",
+            payload: updatedRecipe
+        }, clientId);
+
         if (!updatedRecipe) {
             return res.status(404).json({ error: "Recipe not found." });
         }
         res.json(updatedRecipe);
     } catch (error) {
-        res.status(500).json({ error: "Failed to update recipe." });
+        res.status(500).json({ error: "Failed to update recipe.", details: error.message });
     }
 });
 
-// DELETE /api/recipes/:id - Delete a recipe (PROTECTED)
+// DELETE /api/recipes/:id - Delete a recipe (PROTECTED) - "io" changed
 app.delete("/api/recipes/:id", authenticateToken, async (req, res) => {
-    const recipeId = req.params.id;
+    const clientId = req.header("x-client-id");
+    //const recipeId = req.params.id;
+    const id = req.params.id;
     
     try {
-        const success = await deleteRecipeById(recipeId);
+        const success = await deleteRecipeById(id);
         if (success === null) {
             return res.status(400).json({ error: "Invalid recipe ID format for deletion." });
         }
         if (success) {
+            console.log("Broadcasting delete event with clientId:", clientId);
+            wsioBroadcast({
+                collection: "recipe",
+                op: "delete",
+                payload: { _id: id }
+            }, clientId);
             res.status(204).send();
         } else {
-            res.status(404).json({ error: "Recipe not found." });
+           res.status(404).json({ kind: "Error", message: "Deletion not successful, recipe not found", id: id });
         }
     } catch (error) {
-        res.status(500).json({ error: "Failed to delete recipe." });
+        res.status(500).json({ error: "Failed to delete recipe.", details: error.message });
     }
 });
 
