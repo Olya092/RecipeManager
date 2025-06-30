@@ -10,6 +10,12 @@ const router = createRouter({
       name: 'home',
       component: HomeView
     },
+    // {
+    //   path: '/recipes',
+    //   name: 'recipes',
+    //   component: () => import('../views/RecipesView.vue')
+    //   // No authentication required - open to all users
+    // },
     {
       path: '/admin',
       name: 'admin',
