@@ -48,7 +48,7 @@ function handleNamespaceConnect(socket) {
   });
 }
 
-// Broadcast function - exactly like in app_class.js
+// Broadcast function
 function wsioBroadcast(eventInfo, broadcasterClientId) {
   // eventInfo: { collection, op, payload }
   console.log(eventInfo);

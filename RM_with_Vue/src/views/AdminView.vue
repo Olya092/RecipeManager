@@ -300,7 +300,7 @@
     const deletedRecipe = recipes.value.find(recipe => recipe._id === payloadWithId._id);
     
     if (deletedRecipe) {
-      // Check if this recipe still exists locally (was just deleted it)
+      // Check if this recipe still exists locally (was just deleted)
       const stillExistsLocally = recipes.value.some(recipe => recipe._id === payloadWithId._id);
       
       if (!stillExistsLocally) {
