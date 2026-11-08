@@ -114,9 +114,6 @@ A full-stack web application that helps you organize and manage your favorite re
    npm run dev
    ```
 
-6. **Access the application**
-   - **Live Application**: [https://recipe-managerrr.onrender.com](https://recipe-managerrr.onrender.com)
-
 ## Future Improvements
 
   - [ ] Add recipe sharing and communication between users
