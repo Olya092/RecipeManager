@@ -115,8 +115,6 @@ A full-stack web application that helps you organize and manage your favorite re
    ```
 
 6. **Access the application**
-   - Local Frontend: `http://localhost:5173`
-   - Local Backend API: `http://localhost:3000`
    - **Live Application**: [https://recipe-managerrr.onrender.com](https://recipe-managerrr.onrender.com)
 
 ## Future Improvements
